@@ -24,6 +24,7 @@ public:
 	MyVector(T const* A, int n); //整体复制
 	MyVector(MyVector<T> const& v, int lo, int hi); //向量区间复制
 	MyVector(MyVector<T> const& v); //向量整体复制
+	MyVector(const std::initializer_list<T>& li);
 	~MyVector();
 	int size() const;  // 报告当前向量规模
 	bool empty() const; // 判断是否为空
@@ -42,11 +43,12 @@ public:
 	void sort(); //整体排序
 	void deduplicate(); // 删除重复元素
 	void uniquify(); //删除重复元素
-	T& operator[](int index) const; // 重载下标操作符
+	T& operator[](int index); // 重载下标操作符
+	const T& operator[](int index) const;
 	MyVector<T>& operator=(const MyVector<T> & vec); // 赋值重载
-	MyVector<T>& operator=(const initializer_list<T>& li); // 列表初始化
+	MyVector<T>& operator=(const std::initializer_list<T>& li); // 列表初始化
 private:
-	int m_maxCapacity = maxCopacity;
+	int m_maxCapacity = MAXCAPACITY;
 	int m_size;
 	T* m_array;
 
@@ -74,6 +76,14 @@ MyVector<T>::MyVector(int c , int s, T v) : m_maxCapacity(c), m_size(s)
 	}
 }
 
+template<typename T>
+MyVector<T>::MyVector(const std::initializer_list<T>& li) {
+	m_size = std::distance(li.begin(), li.end());
+	m_array = new T[m_size];
+	for (int i = 0; i < m_size; i++) {
+		m_array[i] = *(li.begin() + i);
+	}
+}
 
 template<typename T>
 MyVector<T>::MyVector(T const* A, int lo, int hi) {
@@ -177,7 +187,13 @@ void MyVector<T>::shrink() {
 
 template <typename T>
 inline
-T& MyVector<T>::operator [](int index) const {
+T& MyVector<T>::operator [](int index) {
+	return m_array[index];
+}
+
+template<typename T>
+inline
+const T& MyVector<T>::operator [](int index) const {
 	return m_array[index];
 }
 
@@ -192,12 +208,11 @@ MyVector<T>& MyVector<T>::operator =(const MyVector<T> & vec) {
 
 template<typename T>
 inline 
-MyVector<T>& MyVector<T>::operator=(const initializer_list<T>& li)
+MyVector<T>& MyVector<T>::operator=(const std::initializer_list<T>& li)
 {
 	if (m_array)
 		delete[] m_array;
-	m_array = li.begin();
-	m_size = std::distance(li.begin(), li.end());
+	*this = MyVector(li);
 	return *this;
 }
 

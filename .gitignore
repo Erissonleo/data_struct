@@ -5,3 +5,5 @@ chapter2_vector/x64/Debug/chapter2_vector.tlog/CL.command.1.tlog
 chapter2_vector/x64/Debug/chapter2_vector.tlog/unsuccessfulbuild
 chapter2_vector/x64/Debug/vc142.idb
 chapter2_vector/x64/Debug/vc142.pdb
+*.tlog
+*.obj
