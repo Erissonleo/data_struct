@@ -37,7 +37,7 @@ public:
 	int uniquify(); // 有序去重
 	void reverse(); // 前后倒置
 	//遍历
-	void traverse(void(*)(T& elem)); // 遍历，依次实施 visit 操作
+	void traverse(void(* visit )(T& elem)); // 遍历，依次实施 visit 操作
 	template<typename VST>
 	void traverse(VST&);
 
@@ -63,6 +63,32 @@ template<typename T>
 inline List<T>::List()
 {
 	init();
+}
+
+template<typename T>
+inline List<T>::List(const List<T>& L)
+{
+	copyNodes(L.first(), L.m_size);
+}
+
+template<typename T>
+inline List<T>::List(const List<T>& L, Rank r, int n)
+{
+	copyNodes(L[r], n);
+}
+
+template<typename T>
+inline List<T>::List(ListNodePosi(T) p, int n)
+{
+	copyNodes(p, n);
+}
+
+template<typename T>
+inline List<T>::~List()
+{
+	clear();
+	delete m_header;
+	delete m_tailer;
 }
 
 template<typename T>
@@ -160,6 +186,17 @@ inline ListNodePosi(T) List<T>::insertAfter(ListNodePosi(T) p, const T& elem)
 }
 
 template<typename T>
+inline T List<T>::remove(ListNodePosi(T) p)
+{
+	T e = p->data;
+	p->pred->succ = p->succ;
+	p->succ->pred = p->pred;
+	delete p;
+	m_size--;
+	return e;
+}
+
+template<typename T>
 inline void List<T>::merge(List<T>& L)
 {
 	merge(first(), m_size, L.first(), L.m_size);
@@ -172,6 +209,29 @@ inline void List<T>::sort()
 }
 
 template<typename T>
+inline int List<T>::deduplicate()
+{
+	if (m_size < 2)
+		return 0;
+	int old_size = m_size;
+	ListNodePosi(T) p = m_header;
+	Rank r = 0;
+	while (m_tailer != (p = p->succ))
+	{
+		ListNodePosi(T) q = find(p->data, r, p);
+		q ? remove(q) : r++;
+	}
+	return old_size - m_size;
+}
+
+template<typename T>
+inline void List<T>::traverse(void(* visit)(T& elem))
+{
+	for (ListNodePosi(T) p = m_header->succ; p != m_tailer; p = p->succ)
+		visit(p->data);
+}
+
+template<typename T>
 inline void List<T>::init()
 {
 	m_header = new ListNode<T>;
@@ -181,4 +241,35 @@ inline void List<T>::init()
 	m_tailer->succ = nullptr;
 	m_tailer->pred = m_header;
 	m_size = 0;
+}
+
+template<typename T>
+inline int List<T>::clear()
+{
+	int old_size = m_size;
+	while (m_size > 0)
+	{
+		remove(m_header->succ);
+	}
+	return old_size;
+}
+
+template<typename T>
+inline void List<T>::copyNodes(ListNodePosi(T) p, int n)
+{
+	init();
+	while (n > 0)
+	{
+		insertAsLast(p->data);
+		p = p->succ;
+		n--;
+	}
+}
+
+template<typename T>
+template<typename VST>
+inline void List<T>::traverse(VST& visit)
+{
+	for (ListNodePosi(T) p = m_header->succ; p != m_tailer; p = p->succ)
+		visit(p->data);
 }
